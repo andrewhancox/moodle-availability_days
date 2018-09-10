@@ -53,13 +53,19 @@ class condition extends \core_availability\condition {
         } else {
             $this->daysfromstart = 10;
         }
+
+        if (isset($structure->units)) {
+            $this->units = $structure->units;
+        } else {
+            $this->units = 'days';
+        }
     }
 
     /**
      * Saves the condition attributes.
      */
     public function save() {
-        return (object)array('type' => 'days', 'd' => $this->daysfromstart);
+        return (object)array('type' => 'days', 'd' => $this->daysfromstart, 'units' => $this->units);
     }
 
     /**
@@ -83,9 +89,15 @@ class condition extends \core_availability\condition {
 
         $referencedate = $this->get_reference_date();
 
+        if (!isset($this->units)) {
+            $this->units = 'days';
+        }
+        $minimumdate  = strtotime("+ $this->daysfromstart $this->units", $referencedate);
+
         // Check condition.
         $now = self::get_time();
-        $allow = $now >= ($this->daysfromstart * DAYSECS) + $referencedate;
+
+        $allow = $now >= $minimumdate;
 
         if ($not) {
             $allow = !$allow;
@@ -168,8 +180,20 @@ class condition extends \core_availability\condition {
     protected function get_either_description($not, $standalone) {
 
         $satag = $standalone ? 'short_' : 'full_';
-        $desc = get_string($satag . 'days', 'availability_days',
-                self::show_days($this->daysfromstart));
+
+        if (!isset($this->units)) {
+            $this->units = 'days';
+        }
+        $time  = strtotime("+ $this->daysfromstart $this->units", $this->get_reference_date());
+        $date = userdate($time, get_string('strftimedatetime', 'langconfig'));
+
+        $langstringobj = (object) [
+          'days' => $this->daysfromstart,
+          'units' => $this->units,
+          'absolute' => $date
+        ];
+
+        $desc = get_string($satag . 'days', 'availability_days', $langstringobj);
         return $desc;
     }
 
@@ -189,22 +213,6 @@ class condition extends \core_availability\condition {
      */
     protected static function get_time() {
         return time();
-    }
-
-    /**
-     * Shows a time either as a date or a full date and time, according to
-     * user's timezone.
-     *
-     * @param int $days the relative days shift from course start
-     * @param bool $dateonly If true, uses date only
-     * @param bool $until If true, and if using date only, shows previous date
-     * @return string Date
-     */
-    protected function show_days($days, $dateonly = false) {
-        global $COURSE;
-
-        $time = $this->get_reference_date() + ($days * DAYSECS);
-        return '+'.$days.' ('.userdate($time, get_string($dateonly ? 'strftimedate' : 'strftimedatetime', 'langconfig')).')';
     }
 
     /**
