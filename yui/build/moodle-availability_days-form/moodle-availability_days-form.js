@@ -42,8 +42,20 @@ M.availability_days.form.getNode = function(json) {
         json.d = '';
     }
 
-    var html = '<span class="availability-group"><label>' + strings.conditiontitle;
-    html += ' <input type="text" size="4" name="field" value="' + json.d + '"></label></span>';
+    var html = '<span class="availability-group"><label>';
+    html += ' <input type="text" size="4" name="field" class="availability_days_settings" value="' + json.d + '">';
+    html +=  '&nbsp;';
+    html += '<select name="units" class="custom-select availability_days_settings">' +
+        '<option value="years">' + M.util.get_string('years', 'availability_days') + '</option>' +
+        '<option value="months">' + M.util.get_string('months', 'availability_days') + '</option>' +
+        '<option value="weeks">' + M.util.get_string('weeks', 'availability_days') + '</option>' +
+        '<option value="days">' + M.util.get_string('days', 'availability_days') + '</option>' +
+        '<option value="minutes">' + M.util.get_string('minutes', 'availability_days') + '</option>' +
+        '<option value="seconds">' + M.util.get_string('seconds', 'availability_days') + '</option>' +
+        '</select>';
+    html +=  '&nbsp;';
+    html += strings.conditiontitle;
+    html += '</label></span>';
 
     var node = Y.Node.create('<span>' + html + '</span>');
 
@@ -51,6 +63,12 @@ M.availability_days.form.getNode = function(json) {
     if (json.d !== undefined) {
         node.one('input[name=field]').set('value', json.d);
     }
+
+    var val = 'days';
+    if (json.units !== undefined) {
+        val = json.units;
+    }
+    node.one('select[name=units]').set("value", val);
 
     // Add event handlers (first time only).
     if (!M.availability_days.form.addedEvents) {
@@ -62,7 +80,7 @@ M.availability_days.form.getNode = function(json) {
         var root = Y.one('#fitem_id_availabilityconditionsjson');
         root.delegate('change', function() {
              updateForm(this);
-        }, '.availability_days input[name=field]');
+        }, '.availability_days_settings');
     }
 
     return node;
@@ -71,6 +89,7 @@ M.availability_days.form.getNode = function(json) {
 M.availability_days.form.fillValue = function(value, node) {
     // Set field.
     value.d = node.one('input[name=field]').get('value');
+    value.units = node.one('select[name=units]').get('value');
 };
 
 }, '@VERSION@', {"requires": ["base", "node", "event", "io", "moodle-core_availability-form"]});
