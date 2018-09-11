@@ -59,13 +59,26 @@ class condition extends \core_availability\condition {
         } else {
             $this->units = 'days';
         }
+
+        if (isset($structure->eea)) {
+            $this->enableenrolledafter = $structure->eea;
+        } else {
+            $this->enableenrolledafter = false;
+        }
+
+        if (isset($structure->t)) {
+            $this->enrolledafterdate = $structure->t;
+        } else {
+            $this->enrolledafterdate = false;
+        }
     }
 
     /**
      * Saves the condition attributes.
      */
     public function save() {
-        return (object)array('type' => 'days', 'd' => $this->daysfromstart, 'units' => $this->units);
+        return (object) array('type' => 'days', 'd' => $this->daysfromstart, 'units' => $this->units,
+                              't'    => $this->enrolledafterdate, 'eea' => $this->enableenrolledafter);
     }
 
     /**
@@ -88,6 +101,14 @@ class condition extends \core_availability\condition {
     public function is_available_for_all($not = false) {
 
         $referencedate = $this->get_reference_date();
+
+        if (!isset($this->enableenrolledafter)) {
+            $this->enableenrolledafter = false;
+        }
+
+        if ($this->enableenrolledafter && $this->enrolledafterdate > $referencedate) {
+            return true;
+        }
 
         if (!isset($this->units)) {
             $this->units = 'days';

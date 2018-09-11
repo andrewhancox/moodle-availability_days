@@ -39,3 +39,5 @@ $string['weeks'] = 'Weeks';
 $string['days'] = 'Days';
 $string['minutes'] = 'Minutes';
 $string['seconds'] = 'Seconds';
+$string['applyrestrictionforuserafter'] = 'Apply restriction for users with an enrolment start date after';
+$string['enableenrolledafter'] = 'Enable';
